@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import com.example.shaoo.assignment2.UI.*;
 
+import java.util.Objects;
+
 import static android.R.attr.path;
 
 public class MainGame extends AppCompatActivity {
@@ -37,15 +39,27 @@ public class MainGame extends AppCompatActivity {
     private void drawBoard(){
         ViewGroup view = (ViewGroup) findViewById(R.id.game);
 
-        Toast.makeText(MainGame.this, "Drawing the board.", Toast.LENGTH_SHORT).show();
 
         View gameView = new GameView(this,null,listener);
         view.addView(gameView);
     }
 
     public void setMessage(String message){
-        TextView view = (TextView) findViewById(R.id.message);
-        view.setText(Html.fromHtml(message));
+        if(Objects.equals(message, "create_new_game"))
+        {
+            newGame(null);
+            return;
+        }
+        TextView view = (TextView) findViewById(R.id.moves);
+        view.setText(message);
+    }
+
+    public void newGame(View view) {
+        ViewGroup n_view = (ViewGroup) findViewById(R.id.game);
+
+
+        View gameView = new GameView(this,null,listener);
+        n_view.addView(gameView);
     }
 }
 

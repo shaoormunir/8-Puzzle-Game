@@ -1,5 +1,6 @@
 package com.example.shaoo.assignment2.UI;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,87 +12,196 @@ import android.widget.Toast;
 
 import android.widget.TextView;
 
-import com.example.shaoo.assignment2.GameEngine.GameEngineMain;
 import com.example.shaoo.assignment2.MainGame;
 
 import java.util.Arrays;
 import java.util.Random;
 
 /**
- * Created by shaoo on 15-Oct-16.
+ * Created by Shaoor Munir on 15-Oct-16.
  */
 
-public class GameBoard {
+class GameBoard {
     private final int size = 3;
     private int width;
     private int height;
+    private Context context;
+    private Cell[] cells;
+    private Canvas canvas;
 
-    private Cell [] cells;
-
-    private Boolean gameWon;
-    private GameEngineMain engine;
-
-    public GameBoard(){
-        engine =  new GameEngineMain();
-        cells = new Cell[engine.getCompleteSize()];
+    GameBoard(Context context) {
+        this.context = context;
+        cells = new Cell[getCompleteSize()];
         this.init();
 
     }
+
     private int getCompleteSize() {
-        return engine.getCompleteSize();
+
+        return size*size;
     }
 
-    public void setDimensions(int w,int h){
+    void setDimensions(int w, int h) {
         width = w;
         height = h;
 
-        for(int i=0; i < getCompleteSize(); i++){
+        for (int i = 0; i < getCompleteSize(); i++) {
             cells[i].setDimensions(getCellWidth(), getCellHeight());
         }
     }
 
-    private void init()
-    {
-        int count = 0;
-        Boolean [] checkArray = new Boolean[10];
+    private void init() {
+        int count;
+        Boolean[] checkArray = new Boolean[10];
         Arrays.fill(checkArray, false);
 
         Random random = new Random();
 
-        while(count < 9)
-        {
-            int cell = random.nextInt(10);
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                cells[cellNum(i, j)] = new Cell(i, j, true, context);
+            }
+        }
 
-            if(!checkArray[cell])
-            {
-                if(count == 0)
-                {
-                    checkArray[cell] = true;
+        int [] board_template = new int[10];
+        boolean isValid = false;
+
+        while(!isValid) {
+            Arrays.fill(checkArray, false);
+            Arrays.fill(board_template, 0);
+            count = 0;
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    int cellNumber = random.nextInt(9);
+
+                    if (!checkArray[cellNumber]) {
+                        board_template[cellNum(i, j)] = cellNumber;
+                        count++;
+                        checkArray[cellNumber] = true;
+                    } else if (count < 10)
+                        j--;
                 }
-                else {
-                    cells[cell].changeState(count);
-                    checkArray[cell] = true;
-                    count ++;
+            }
+
+            if(check_validity(board_template))
+                isValid = true;
+        }
+
+        for(int i = 0; i <size; i++){
+            for (int j = 0; j<size;j++)
+            {
+                cells[cellNum(i,j)].changeState(board_template[cellNum(i, j)]);
+            }
+        }
+    }
+
+    private int cellNum(int i, int j) {
+
+        return (j * size)+ i;
+    }
+
+    private int getCellWidth() {
+
+        return width / size;
+    }
+
+    private int getCellHeight() {
+
+        return height / size;
+    }
+
+    private Cell getCell(int i, int j) {
+
+        return cells[cellNum(i, j)];
+    }
+
+    void draw(Canvas canvas) {
+        this.canvas = canvas;
+
+        for (int i = 0; i < getCompleteSize(); i++) {
+            cells[i].draw(canvas);
+        }
+    }
+
+    boolean updateBoard(float x, float y) {
+        int i = (int) x / getCellWidth();
+        int j = (int) y / getCellHeight();
+
+
+        int cellNumber = cellNum(i, j);
+        int temp = Math.abs(cellNum(i + 1, j));
+        if(i!=2) {
+
+            if (temp >= 0 && temp < 9) {
+                if (cells[temp].checkEmpty()) {
+                    cells[temp].changeState(cells[cellNumber].returnNumber());
+                    cells[cellNumber].changeState(0);
+                    return true;
                 }
             }
         }
 
-    }
+        if(i!=0) {
+            temp = Math.abs(cellNum(i - 1, j));
 
-    private int getCellWidth(){
-        return width / size;
-    }
-
-    private int getCellHeight(){
-        return height / size;
-    }
-
-    public void draw(Canvas canvas)
-    {
-
-        for(int i=0;i<engine.getCompleteSize();i++)
-        {
-            cells[i].draw(canvas);
+            if (temp >= 0 && temp < 9) {
+                if (cells[temp].checkEmpty()) {
+                    cells[temp].changeState(cells[cellNumber].returnNumber());
+                    cells[cellNumber].changeState(0);
+                    return true;
+                }
+            }
         }
+
+        if(j!=2) {
+            temp = Math.abs(cellNum(i, j + 1));
+
+            if (temp >= 0 && temp < 9) {
+                if (cells[temp].checkEmpty()) {
+                    cells[temp].changeState(cells[cellNumber].returnNumber());
+                    cells[cellNumber].changeState(0);
+                    return true;
+                }
+            }
+        }
+
+        if(j!=0) {
+            temp = Math.abs(cellNum(i, j - 1));
+
+            if (temp >= 0 && temp < 9) {
+                if (cells[temp].checkEmpty()) {
+                    cells[temp].changeState(cells[cellNumber].returnNumber());
+                    cells[cellNumber].changeState(0);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    boolean check_game_state()
+    {
+        for (int i = 1; i<getCompleteSize();i++)
+        {
+            if(cells[i-1].returnNumber() != i)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    private boolean check_validity(int[] arr)
+    {
+        int inversions = 0;
+        for(int i=0;i<getCompleteSize();i++)
+        {
+            for(int j=i+1;j<getCompleteSize();j++)
+            {
+                if(arr[i] > arr[j])
+                    inversions++;
+            }
+        }
+
+        return inversions % 2 == 0;
     }
 }

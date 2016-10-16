@@ -1,44 +1,59 @@
 package com.example.shaoo.assignment2.UI;
 
+import android.content.Context;
 import android.graphics.Canvas;
 
 /**
- * Created by shaoo on 15-Oct-16.
+ * Created by Shaoor Munir on 15-Oct-16.
  */
 
-public class Cell {
+class Cell {
     private int x;
     private int y;
     private int width;
     private int height;
     private boolean empty;
     private CellState state;
+    private Context context;
 
-    public Cell(int x, int y, Boolean isEmpty) {
+    Cell(int x, int y, Boolean isEmpty, Context context) {
+        this.context = context;
         this.x = x;
         this.y = y;
-        this.empty = true;
+        this.empty = isEmpty;
 
-        state = new CellState();
+        state = new CellState(context);
         empty = true;
     }
 
-    public void draw(Canvas canvas) {
+    void draw(Canvas canvas) {
         state.draw(canvas, x, y, width, height);
     }
 
-    public void setDimensions(int width, int height) {
+    void setDimensions(int width, int height) {
 
         this.height = height;
         this.width = width;
 
     }
 
-    public void changeState(int number) {
-        state = new CellFilledState(number);
+    void changeState(int number) {
+
+        if(number == 0)
+        {
+            state = new CellEmptyState(context);
+            this.empty = true;
+        }
+        else {
+
+
+            state = new CellFilledState(number, context);
+            this.empty = false;
+        }
+
     }
 
-    public int returnNumber()
+    int returnNumber()
     {
         if(!empty)
         {
@@ -46,5 +61,10 @@ public class Cell {
         }
         else
             return 0;
+    }
+
+    boolean checkEmpty()
+    {
+        return this.empty;
     }
 }
