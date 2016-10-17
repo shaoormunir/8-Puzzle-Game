@@ -89,7 +89,7 @@ public class GameView extends View {
         if(board.check_game_state())
         {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setMessage("You won the game in "+ String.valueOf(this.moves) + " moves")
+            builder.setMessage("Congratulations! You won the game in "+ String.valueOf(this.moves) + " moves")
                     .setCancelable(false)
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
